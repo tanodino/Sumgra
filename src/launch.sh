@@ -1,0 +1,2 @@
+#javac -Xmx4096m -cp .:/Users/dinoienco/Downloads/gs-collections-7.0.0/gs-collections-7.0.0/gs-collections-7.0.0.jar:/Users/dinoienco/Downloads/gs-collections-7.0.0/gs-collections-api-7.0.0/gs-collections-api-7.0.0.jar Main.java
+java -Xmx4096m -cp .:/Users/dinoienco/Downloads/gs-collections-7.0.0/gs-collections-7.0.0/gs-collections-7.0.0.jar:/Users/dinoienco/Downloads/gs-collections-7.0.0/gs-collections-api-7.0.0/gs-collections-api-7.0.0.jar Main

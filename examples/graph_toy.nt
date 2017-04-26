@@ -1,0 +1,6 @@
+A <http://dbpedia.org/property/ushrProperty> C .
+C <http://dbpedia.org/property/ushrProperty> B .
+C <http://dbpedia.org/property/ushrProperty> D .
+E <http://dbpedia.org/property/ushrProperty> B .
+E <http://dbpedia.org/property/ushrProperty> F .
+F <http://dbpedia.org/property/ushrProperty> D .
