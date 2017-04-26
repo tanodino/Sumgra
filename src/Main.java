@@ -30,6 +30,7 @@ import queryparser.ParseException;
 
 public class Main {
 
+	//test erick commit
 	public static void main(String[] args) throws IOException, ParseException {
 		// TODO Auto-generated method stub
 		/*
