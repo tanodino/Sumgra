@@ -65,7 +65,7 @@ public class Main {
 	}
 
 	public static void testParser() throws ParseException, IOException {
-		GraphDatabase g = new GraphDatabase("examples/graph_toy.nt");
+		GraphDatabase g = new GraphDatabase("examples/graph_toy.sumgra");
 		long start = System.currentTimeMillis();
 		// String fileNameData =
 		// "/Users/dinoienco/Downloads/annotations-atweb.nt";

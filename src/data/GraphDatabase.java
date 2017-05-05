@@ -120,22 +120,25 @@ public class GraphDatabase {
 	
 	public void buildSynopsis(String fileName, int n_synopsis, HashMap<SimplePointND, IntArrayList> compacted_synopsis){
 		short[][] synopsis;
-		synopsis = new short[n_synopsis][Settings.N_FEAT*2];
-		for (int i=0; i < synopsis.length; ++i) synopsis[i][2] = synopsis[i][2+Settings.N_FEAT] = Short.MIN_VALUE;
+		synopsis = new short[n_synopsis][Settings.N_FEAT];
+		//Setting the feature 4: minimum index of lexicographically ordered edge dimensions
+		for (int i=0; i < synopsis.length; ++i) synopsis[i][3] = Short.MIN_VALUE;
 		
-		// feature 1: maximum cardinality of a set in the vertex signature
-		// feature 2: number of unique dimension in the vertex signature
-		// feature 3: minimum index value of the edge type
-		// feature 4: maximum index value of the edge type
+		// feature 1: NEW cardinality of vertex signature
+		// feature 2: F2 number of unique dimension in the vertex signature
+		// feature 3: NEW number of all occurrences of the dimensions (with repetition)
+		// feature 4: F3 minimum index of lexicographically ordered edge dimensions
+		// feature 5: F4 maximum index of lexicographically ordered edge dimensions
+		// feature 6: F1 maximum cardinality of the vertex sub-signature
+		
 		IntObjectHashMap predsSetIn = new IntObjectHashMap(); //positive - object
-		IntObjectHashMap predsSetOut = new IntObjectHashMap(); //negative - subject
 		
+		//Initializing the predsSetIn array
 		for (int i=0; i < synopsis.length; ++i){
 			predsSetIn.put(i, new HashSet<Short>());
-			predsSetOut.put(i, new HashSet<Short>());
 		}
 			
-		String file2read = fileName+Settings.TEMP_EXTENSION;
+		String file2read = fileName;
 		BufferedReader br = null;
 		InputStreamReader isr = null;
 		FileInputStream fis = null;
@@ -153,41 +156,40 @@ public class GraphDatabase {
 					System.out.println("k: "+k);
 				k++;
 				String[] elements= cur.split(" ");
-				int subj = Integer.parseInt(elements[0]);
-				int obj = Integer.parseInt(elements[1]);
-				String [] preds = elements[2].split(",");
+				int subj = Integer.parseInt(elements[0]);//Subjet
+				int obj = Integer.parseInt(elements[1]);//Object
+				String [] preds = elements[2].split(",");//Predicats
 				short [] dims = new short[preds.length];
 				for (int j=0; j < preds.length; ++j) dims[j] = Short.parseShort(preds[j]);				
 				((Otil)neigh_index.get(subj)).add(dims, obj, Settings.OUT);
 				((Otil)neigh_index.get(obj)).add(dims, subj, Settings.IN);
 				
-				//feature 1 - maximum cardinality
-				if (synopsis[obj][0] < preds.length)
-					synopsis[obj][0] = (short) preds.length;
-				if (synopsis[subj][0+Settings.N_FEAT] < preds.length)
-					synopsis[subj][0+Settings.N_FEAT] = (short) preds.length;
+				//feature 6 - maximum cardinality
+				if (synopsis[obj][5] < preds.length)
+					synopsis[obj][5] = (short) preds.length; 
+				if (synopsis[subj][5] < preds.length)
+					synopsis[subj][5] = (short) preds.length;
 				
 				 				
 				for (int j=0; j < preds.length; ++j){					
 					short pred = Short.parseShort(preds[j]);
 					((HashSet<Short>) predsSetIn.get(obj)).add(pred);
-					((HashSet<Short>) predsSetOut.get(subj)).add(pred);
 					
-					//feature 3: minimum index value of the edge type
+					//feature 4: minimum index value of the edge type
 
-					if (synopsis[obj][2] < (pred*-1) )
-						synopsis[obj][2] = (short) (pred*-1);
+					if (synopsis[obj][3] < (pred*-1) )
+						synopsis[obj][3] = (short) (pred*-1);
 					
-					if (synopsis[subj][2+Settings.N_FEAT] < (pred*-1) )
-						synopsis[subj][2+Settings.N_FEAT] = (short) (pred*-1);
+					if (synopsis[subj][3] < (pred*-1) )
+						synopsis[subj][3] = (short) (pred*-1);
 					/**/					
-					//feature 4: maximum index value of the edge type
+					//feature 5: maximum index value of the edge type
 
-					if (synopsis[obj][3] < pred )
-						synopsis[obj][3] = pred;
+					if (synopsis[obj][4] < pred )
+						synopsis[obj][4] = pred;
 					
-					if (synopsis[subj][3+Settings.N_FEAT] < pred )
-						synopsis[subj][3+Settings.N_FEAT] = pred;
+					if (synopsis[subj][4] < pred )
+						synopsis[subj][4] = pred;
 				}
 			}
 			isr.close();
@@ -198,10 +200,10 @@ public class GraphDatabase {
 		}
 		
 		// feature 2: number of unique dimension in the vertex signature
-
+		// Construction of the compacted_synopsis
 		for (int i=0; i < synopsis.length; ++i){
 			synopsis[i][1] = (short) ((HashSet<Short>) predsSetIn.get(i)).size();
-			synopsis[i][1+Settings.N_FEAT] = (short) ((HashSet<Short>) predsSetOut.get(i)).size();
+//			synopsis[i][1+Settings.N_FEAT] = (short) ((HashSet<Short>) predsSetOut.get(i)).size();
 			SimplePointND temp = new SimplePointND(synopsis[i]);
 			if (!compacted_synopsis.containsKey(temp))
 				compacted_synopsis.put(temp, new IntArrayList());
@@ -435,7 +437,7 @@ public class GraphDatabase {
 
 		MutableIntSet keys = int2stringSO.keySet();
 		MutableIntIterator itr = keys.intIterator();
-		while (itr.hasNext()) neigh_index.put(itr.next(), new Otil());
+		while (itr.hasNext()) neigh_index.put(itr.next(), new Otil());//OTIL tree for each vertex index
 		
 		buildSynopsis(fileName, int2stringSO.size(), compacted_synopsis);
 		prtree = new PRTree(new NDMBRConverter(Settings.SYNOPSIS_SIZE), 10);
@@ -459,8 +461,8 @@ public class GraphDatabase {
 		int i = 0;
 		try {
 			
-			while((cur=br.readLine()) != null){
-				String[] temp = cur.split(" ");
+			while((cur=br.readLine()) != null){ //0 1 1,2,3,4...
+				String[] temp = cur.split(" "); //[A, <http://dbpedia.org/property/ushrProperty>, C, .]
 				if (temp[0].equals("#")) continue;
 				for (int j=3; j<temp.length-1;++j){
 					temp[2]= temp[2]+" "+temp[j];
@@ -472,22 +474,23 @@ public class GraphDatabase {
 					int2stringSO.put(key, temp[0]);			
 				}
 				
+				if (!string2intSO.containsKey(temp[1])){
+					int key = string2intSO.size();
+					string2intSO.put(temp[1], key);
+					int2stringSO.put(key, temp[1]);	
+				}
 				
-				if (!string2ShortP.containsKey(temp[1])){
+				if (!string2ShortP.containsKey(temp[2])){
 					short key = (short) (string2ShortP.size()+1);
-					string2ShortP.put(temp[1], key);
-					Short2stringP.put(key, temp[1]);
+					string2ShortP.put(temp[2], key);
+					Short2stringP.put(key, temp[2]);
 					property_stat.put(key, 0);
 				}
 				
-				if (!string2intSO.containsKey(temp[2])){
-					int key = string2intSO.size();
-					string2intSO.put(temp[2], key);
-					int2stringSO.put(key, temp[2]);	
-				}
+				
 				int subj = string2intSO.get( temp[0]);
-				short pred = string2ShortP.get(temp[1]);
-				int obj = string2intSO.get( temp[2]);
+				int obj = string2intSO.get( temp[1]);
+				short pred = string2ShortP.get(temp[2]);
 				property_stat.put(pred,  property_stat.get(pred)+1);
 				
 				if ( ! adjlistOut.containsKey(subj)){
@@ -502,7 +505,7 @@ public class GraphDatabase {
 				}
 
 				++i;
-				if (i % 1000000 == 0) {
+				if (i % Settings.INIT_SIZE == 0) {
 					System.out.println(i);
 					System.gc();
 				}
@@ -514,37 +517,38 @@ public class GraphDatabase {
 			e.printStackTrace();
 		}
 		
+		//output file TEMP
 		
-		String outFile = fileName+Settings.TEMP_EXTENSION;
-		OutputStreamWriter osr = null;
-		try {
-			osr = new OutputStreamWriter(new FileOutputStream(outFile));
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		PrintWriter out = new PrintWriter(osr, true);
-		
-		MutableIntIterator itr = adjlistOut.keySet().intIterator();
-				 
-		while(itr.hasNext()) {
-			int source = itr.next();
-			IntObjectHashMap<ShortArrayList> neighs = adjlistOut.get(source);
-			MutableIntIterator itr2 = neighs.keySet().intIterator();
-			while(itr2.hasNext()) {
-				int sink = itr2.next();
-				ShortArrayList preds = neighs.get(sink);
-				String preds_to_print = "";
-				for (int j=0; j < preds.size()-1; ++j){
-					preds_to_print +=preds.get(j)+",";
-				}
-				preds_to_print+=preds.get(preds.size()-1);
-				out.println(source+" "+sink+" "+preds_to_print);
-				//System.out.println(source+" "+sink+" "+preds_to_print);
-			}
-		
-		}	
-		out.close();
+//		String outFile = fileName+Settings.TEMP_EXTENSION;
+//		OutputStreamWriter osr = null;
+//		try {
+//			osr = new OutputStreamWriter(new FileOutputStream(outFile));
+//		} catch (FileNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		PrintWriter out = new PrintWriter(osr, true);
+//		
+//		MutableIntIterator itr = adjlistOut.keySet().intIterator();
+//				 
+//		while(itr.hasNext()) {
+//			int source = itr.next();
+//			IntObjectHashMap<ShortArrayList> neighs = adjlistOut.get(source);
+//			MutableIntIterator itr2 = neighs.keySet().intIterator();
+//			while(itr2.hasNext()) {
+//				int sink = itr2.next();
+//				ShortArrayList preds = neighs.get(sink);
+//				String preds_to_print = "";
+//				for (int j=0; j < preds.size()-1; ++j){
+//					preds_to_print +=preds.get(j)+",";
+//				}
+//				preds_to_print+=preds.get(preds.size()-1);
+//				out.println(source+" "+sink+" "+preds_to_print);
+//				//System.out.println(source+" "+sink+" "+preds_to_print);
+//			}
+//		
+//		}	
+//		out.close();
 		//isr.close();		
 	}
 
