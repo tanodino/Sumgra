@@ -6,13 +6,13 @@ import java.util.Comparator;
 public class LinkObjectPath implements Comparator<LinkObjectPath>, Comparable<LinkObjectPath>{
 	public int previous_id;
 	public int rank_previous_id;
-	public int direction;
+//	public int direction;
 	public short[] dims;
 	
-	public LinkObjectPath(int previous_id, int rank_previous_id, int direction, short[] dims){
+	public LinkObjectPath(int previous_id, int rank_previous_id, short[] dims){
 		this.previous_id = previous_id;
 		this.rank_previous_id = rank_previous_id;
-		this.direction = direction;
+//		this.direction = direction;
 		this.dims = dims;
 	}
 	
@@ -27,7 +27,7 @@ public class LinkObjectPath implements Comparator<LinkObjectPath>, Comparable<Li
 	}
 	
 	public String toString(){
-		return "RANK Prev ID: "+rank_previous_id+" DIR: "+direction+" DIM: "+Arrays.toString(dims);
+		return "RANK Prev ID: "+rank_previous_id+" DIM: "+Arrays.toString(dims);
 	}
 	
 }

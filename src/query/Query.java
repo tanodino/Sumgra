@@ -576,9 +576,9 @@ public class Query {
 			for (int j=0; j < i; ++j){
 				int previous_id = queryOrder[j];
 				if (out_list.get(vertex_id1) != null && ((IntHashSet) out_list.get(vertex_id1)).contains(previous_id))
-					current.addLink(previous_id, j, Settings.IN, pair2dims_vec.get( new Pair(vertex_id1,previous_id) ));
+					current.addLink(previous_id, j,  pair2dims_vec.get( new Pair(vertex_id1,previous_id) ));
 				if ( in_list.get(vertex_id1) != null && ((IntHashSet) in_list.get(vertex_id1)).contains(previous_id) )
-					current.addLink(previous_id, j, Settings.OUT, pair2dims_vec.get( new Pair(previous_id,vertex_id1) ));				
+					current.addLink(previous_id, j,  pair2dims_vec.get( new Pair(previous_id,vertex_id1) ));				
 			}
 			current.sort();
 			it_sat = cores2sats.get(current.id).intIterator();

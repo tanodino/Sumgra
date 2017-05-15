@@ -36,8 +36,8 @@ public class ObjectPath {
 		satellites_out = new IntObjectHashMap< short[]>();
 	}
 	
-	public void addLink(int previous_id, int rank_previous_id, int direction, short[] dims){
-		previous_links_cores.add( new LinkObjectPath(previous_id, rank_previous_id, direction, dims));
+	public void addLink(int previous_id, int rank_previous_id, short[] dims){
+		previous_links_cores.add( new LinkObjectPath(previous_id, rank_previous_id, dims));
 	}
 	
 	public void sort(){
@@ -47,7 +47,7 @@ public class ObjectPath {
 	public String toString(){
 		String st="id: "+id+" ranking_pos: "+ranking_pos+"\n";
 		for (LinkObjectPath p: previous_links_cores){
-			st+="\tprevious_id: "+p.previous_id+" rank_previous_id: "+p.rank_previous_id+" direction: "+p.direction+" dims: "+Arrays.toString(p.dims)+"\n";
+			st+="\tprevious_id: "+p.previous_id+" rank_previous_id: "+p.rank_previous_id+" dims: "+Arrays.toString(p.dims)+"\n";
 		}
 		if (selfLoop != null)
 			st+="selfloop: "+Arrays.toString(selfLoop);

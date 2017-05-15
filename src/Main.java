@@ -182,7 +182,7 @@ public class Main {
 	 * }
 	 */
 	public static void testOtil() {
-		String file2read = "/Users/dinoienco/Documents/workspace/Amber/example_otil.txt";
+		String file2read = "examples/example_otil.txt";
 		BufferedReader br = null;
 		InputStreamReader isr = null;
 		try {
@@ -203,7 +203,7 @@ public class Main {
 				for (int i = 0; i < preds.length; ++i)
 					seq[i] = Short.parseShort(preds[i]);
 				// System.out.println("add: "+Arrays.toString(seq));
-				o.add(seq, neigh, direction);
+				o.add(seq, neigh);
 			}
 			isr.close();
 			br.close();
@@ -219,12 +219,12 @@ public class Main {
 		short[] query3 = { 5 };
 
 		System.out.println("=============");
-		System.out.println(o.query(query1, 1));
-		System.out.println(o.query(query2, 1));
-		System.out.println(o.query(query3, -1));
+		System.out.println(o.query(query1));
+		System.out.println(o.query(query2));
+		System.out.println(o.query(query3));
 		System.out.println("=============");
 		short[] lab = { 2, 3, 4 };
-		System.out.println(o.checkIFNeighExists(lab, 2, 1));
+		System.out.println(o.checkIFNeighExists(lab, 2));
 	}
 
 }

@@ -13,23 +13,23 @@ public class OtilNode {
 	public ShortObjectHashMap<OtilNode> children;
 	public short label;
 	public IntArrayList vertexIds_in;
-	public IntArrayList vertexIds_out;
-	
-
 	
 	public OtilNode(OtilNode parent, short label){
 		this.parent = parent;
 		this.label = label;
 		vertexIds_in = new IntArrayList();
-		vertexIds_out = new IntArrayList();
 		children = null;
 	}
+
+//	public void addIdVertex(int id, int direction){
+//		if (direction == Settings.IN)
+//			vertexIds_in.add(id);
+//		else
+//			vertexIds_out.add(id);
+//	}
 	
-	public void addIdVertex(int id, int direction){
-		if (direction == Settings.IN)
-			vertexIds_in.add(id);
-		else
-			vertexIds_out.add(id);
+	public void addIdVertex(int id){
+		vertexIds_in.add(id);
 	}
 	
 	

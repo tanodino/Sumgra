@@ -1,17 +1,11 @@
 
 package otil;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.TreeSet;
-
 import com.gs.collections.api.iterator.MutableShortIterator;
 import com.gs.collections.api.set.primitive.MutableShortSet;
+import com.gs.collections.impl.list.mutable.FastList;
 import com.gs.collections.impl.map.mutable.primitive.ShortObjectHashMap;
 import com.gs.collections.impl.set.mutable.primitive.IntHashSet;
-import com.gs.collections.impl.list.mutable.FastList;
-import com.gs.collections.impl.list.mutable.primitive.IntArrayList;
 
 import data.Settings;
 
@@ -21,51 +15,36 @@ import data.Settings;
 public class Otil {
 	
 	private ShortObjectHashMap<FastList<OtilNode>> labelNodeList_in;
-	private ShortObjectHashMap<FastList<OtilNode>> labelNodeList_out;
 	private ShortObjectHashMap<OtilNode> tree;
 	private IntHashSet in_list;
-	private IntHashSet out_list;
 	
 	public Otil(){
 		labelNodeList_in = new ShortObjectHashMap<FastList<OtilNode>>();
-		labelNodeList_out = new ShortObjectHashMap<FastList<OtilNode>>();
 		tree = new ShortObjectHashMap<OtilNode>();
 		in_list = new IntHashSet();
-		out_list = new IntHashSet();
 	}
 	
 	
-	public boolean checkIFNeighExists(short[] labels, int vertex_id, int direction){
-		if (direction == Settings.IN){
-			if (!in_list.contains(vertex_id)) return false;
-		}
-		else{
-			if (!out_list.contains(vertex_id)) return false;
-		}
+	public boolean checkIFNeighExists(short[] labels, int vertex_id){
+		if (!in_list.contains(vertex_id)) return false;
 		FastList<OtilNode> elements = null;
-		if (direction == Settings.IN)
-			elements = labelNodeList_in.get(labels[labels.length-1]);
-		else
-			elements = labelNodeList_out.get(labels[labels.length-1]);
+		elements = labelNodeList_in.get(labels[labels.length-1]);
 		
 		if (elements == null){
 				return false;
 		}
 		for (OtilNode node: elements){
-			if (direction == Settings.IN && node.vertexIds_in.contains(vertex_id)  && recursiveCheck(node.parent, labels, labels.length-2))
-				return true;
-			
-			if (direction == Settings.OUT && node.vertexIds_out.contains(vertex_id) && recursiveCheck(node.parent, labels, labels.length-2))
+			if (node.vertexIds_in.contains(vertex_id)  && recursiveCheck(node.parent, labels, labels.length-2))
 				return true;
 			
 		}
 		return false;
 	}
 	
-	public IntHashSet query(short[] labels, int direction){
+	public IntHashSet query(short[] labels){
 		IntHashSet sel_neighs = new IntHashSet();
 		FastList<OtilNode> elements = null;
-		ShortObjectHashMap<FastList<OtilNode>> tempLabelNodeList = (direction == Settings.IN)?labelNodeList_in:labelNodeList_out;
+		ShortObjectHashMap<FastList<OtilNode>> tempLabelNodeList = labelNodeList_in;
 		elements = tempLabelNodeList.get(labels[labels.length-1]);
 		if (elements == null){
 				return sel_neighs;
@@ -73,10 +52,7 @@ public class Otil {
 		
 		for (OtilNode node: elements){
 			if (recursiveCheck(node.parent, labels, labels.length-2)   ){
-				if (direction == Settings.IN)
-					sel_neighs.addAll(node.vertexIds_in);
-				else
-					sel_neighs.addAll(node.vertexIds_out);
+				sel_neighs.addAll(node.vertexIds_in);
 			}
 		}
 		return sel_neighs;
@@ -100,18 +76,15 @@ public class Otil {
 	}	
 	
 	
-	public void add(short[] sequenceLabel, int neigh_id, int direction){
-		if (direction == Settings.IN)
-			in_list.add(neigh_id);
-		else
-			out_list.add(neigh_id);
+	public void add(short[] sequenceLabel, int neigh_id){
+		in_list.add(neigh_id);
 		
 		OtilNode n = null;
 		short label = sequenceLabel[0];
-		ShortObjectHashMap<FastList<OtilNode>> tempLabelNodeList = (direction == Settings.IN)?labelNodeList_in:labelNodeList_out;
+		ShortObjectHashMap<FastList<OtilNode>> tempLabelNodeList = labelNodeList_in;
 		if (tree.containsKey(label)){//in the case the node already exists but it is the first time that is access by IN (or OUT) insertion
 			n = (OtilNode) tree.get(label);
-			int size_ids = (direction == Settings.IN)?n.vertexIds_in.size():n.vertexIds_out.size();
+			int size_ids = n.vertexIds_in.size();
 			if (size_ids == 0){
 				if (!tempLabelNodeList.containsKey(label)){
 					tempLabelNodeList.put(label, new FastList<OtilNode>());
@@ -128,16 +101,13 @@ public class Otil {
 			 }
 			 tempLabelNodeList.get(label).add(n);
 		}
-		if (direction == Settings.IN)
-			n.vertexIds_in.add(neigh_id);
-		else
-			n.vertexIds_out.add(neigh_id);
+		n.vertexIds_in.add(neigh_id);
 		
 		
-		insert(sequenceLabel,  1, n, neigh_id, direction);
+		insert(sequenceLabel,  1, n, neigh_id);
 	}
 	
-	private void insert(short[] sequenceLabel, int pos, OtilNode parent, int neigh_id, int direction){
+	private void insert(short[] sequenceLabel, int pos, OtilNode parent, int neigh_id){
 		// If I'm at the end of the sequenceLabel I do backtracking
 		if (pos == sequenceLabel.length) 
 			return;
@@ -145,7 +115,7 @@ public class Otil {
 		// Get the current label of the sequence
 		short label = sequenceLabel[pos];
 		OtilNode child = parent.getChild(label);
-		ShortObjectHashMap<FastList<OtilNode>> tempLabelNodeList = (direction == Settings.IN)?labelNodeList_in:labelNodeList_out;
+		ShortObjectHashMap<FastList<OtilNode>> tempLabelNodeList = labelNodeList_in;
 		//If the child does not exist, create it
 		if (child == null){
 			child = new OtilNode(parent, label);
@@ -155,7 +125,7 @@ public class Otil {
 			}
 			tempLabelNodeList.get(label).add(child);
 		}else{//in the case the node already exists but it is the first time that is access by IN (or OUT) insertion
-			int size_ids = (direction == Settings.IN)?child.vertexIds_in.size():child.vertexIds_out.size();
+			int size_ids = child.vertexIds_in.size();
 			if (size_ids == 0){
 				if (!tempLabelNodeList.containsKey(label)){
 					tempLabelNodeList.put(label, new FastList<OtilNode>());
@@ -164,23 +134,17 @@ public class Otil {
 			}			
 		}
 		//Add the neighborhood to the list of the child node
-		if (direction == Settings.IN)
-			child.vertexIds_in.add(neigh_id);
-		else
-			child.vertexIds_out.add(neigh_id);
+		child.vertexIds_in.add(neigh_id);
 		//Add the node to the list of the label that is orthogonal to the tree data structure
 			
-		insert(sequenceLabel, pos+1, child, neigh_id, direction);
+		insert(sequenceLabel, pos+1, child, neigh_id);
 	}
 	
 	public void print2(int direction){
 		//System.out.println("size IN: "+labelNodeList_in.size());
 		//System.out.println("size OUT: "+labelNodeList_out.size());
 		ShortObjectHashMap<FastList<OtilNode>> temp = null;
-		if (direction == Settings.IN)
-			temp = labelNodeList_in;
-		else
-			temp = labelNodeList_out;
+		temp = labelNodeList_in;
 		
 		MutableShortSet keys = temp.keySet();
 		MutableShortIterator it = keys.shortIterator();
@@ -189,7 +153,7 @@ public class Otil {
 			FastList<OtilNode> list =  temp.get(label);
 			System.out.println(label+" # el: "+list.size());
 			for (OtilNode t: list){				
-				System.out.println("IN: "+t.vertexIds_in+" OUT: "+t.vertexIds_out);
+				System.out.println("IN: "+t.vertexIds_in);
 			}
 		}
 	}
@@ -225,3 +189,4 @@ public class Otil {
 	}
 	
 }
+	

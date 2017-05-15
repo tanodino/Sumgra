@@ -124,12 +124,12 @@ public class GraphDatabase {
 		//Setting the feature 4: minimum index of lexicographically ordered edge dimensions
 		for (int i=0; i < synopsis.length; ++i) synopsis[i][3] = Short.MIN_VALUE;
 		
-		// feature 1: NEW cardinality of vertex signature
-		// feature 2: F2 number of unique dimension in the vertex signature
-		// feature 3: NEW number of all occurrences of the dimensions (with repetition)
-		// feature 4: F3 minimum index of lexicographically ordered edge dimensions
-		// feature 5: F4 maximum index of lexicographically ordered edge dimensions
-		// feature 6: F1 maximum cardinality of the vertex sub-signature
+		// feature 1: cardinality of vertex signature
+		// feature 2: number of unique dimension in the vertex signature (f2 in amber)
+		// feature 3: number of all occurrences of the dimensions (with repetition)
+		// feature 4: minimum index of lexicographically ordered edge dimensions (f3 in amber)
+		// feature 5: maximum index of lexicographically ordered edge dimensions (f4 in amber)
+		// feature 6: maximum cardinality of the vertex sub-signature (f1 in amber)
 		
 		IntObjectHashMap predsSetIn = new IntObjectHashMap(); //positive - object
 		
@@ -152,7 +152,7 @@ public class GraphDatabase {
 		try {
 			int k = 0;
 			while((cur=br.readLine()) != null){
-				if (k % 1000000 == 0)
+				if (k % Settings.INIT_SIZE == 0)
 					System.out.println("k: "+k);
 				k++;
 				String[] elements= cur.split(" ");
@@ -161,8 +161,16 @@ public class GraphDatabase {
 				String [] preds = elements[2].split(",");//Predicats
 				short [] dims = new short[preds.length];
 				for (int j=0; j < preds.length; ++j) dims[j] = Short.parseShort(preds[j]);				
-				((Otil)neigh_index.get(subj)).add(dims, obj, Settings.OUT);
-				((Otil)neigh_index.get(obj)).add(dims, subj, Settings.IN);
+				((Otil)neigh_index.get(subj)).add(dims, obj);
+				((Otil)neigh_index.get(obj)).add(dims, subj);
+				
+				//feature 1 - cardinality of vertex signature (num of edges sets)
+				synopsis[obj][0] = (short) (synopsis[obj][0] + 1);
+				synopsis[subj][0] = (short) (synopsis[subj][0] + 1);
+
+				//feature 3 - number of all occurrences of the dimensions (with repetitions)
+				synopsis[obj][2] = (short) (synopsis[obj][2] + preds.length);
+				synopsis[subj][2] = (short) (synopsis[subj][2] + preds.length);
 				
 				//feature 6 - maximum cardinality
 				if (synopsis[obj][5] < preds.length)
@@ -173,18 +181,18 @@ public class GraphDatabase {
 				 				
 				for (int j=0; j < preds.length; ++j){					
 					short pred = Short.parseShort(preds[j]);
-					((HashSet<Short>) predsSetIn.get(obj)).add(pred);
+					((HashSet<Short>) predsSetIn.get(obj)).add(pred);//undirected graph
+					((HashSet<Short>) predsSetIn.get(subj)).add(pred);//undirected graph
 					
 					//feature 4: minimum index value of the edge type
-
 					if (synopsis[obj][3] < (pred*-1) )
 						synopsis[obj][3] = (short) (pred*-1);
 					
 					if (synopsis[subj][3] < (pred*-1) )
 						synopsis[subj][3] = (short) (pred*-1);
-					/**/					
+					/**/
+					
 					//feature 5: maximum index value of the edge type
-
 					if (synopsis[obj][4] < pred )
 						synopsis[obj][4] = pred;
 					
@@ -198,12 +206,14 @@ public class GraphDatabase {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		
+
 		// feature 2: number of unique dimension in the vertex signature
 		// Construction of the compacted_synopsis
 		for (int i=0; i < synopsis.length; ++i){
+			//feature 2
 			synopsis[i][1] = (short) ((HashSet<Short>) predsSetIn.get(i)).size();
 //			synopsis[i][1+Settings.N_FEAT] = (short) ((HashSet<Short>) predsSetOut.get(i)).size();
+			// Construction of compacted_synopsis
 			SimplePointND temp = new SimplePointND(synopsis[i]);
 			if (!compacted_synopsis.containsKey(temp))
 				compacted_synopsis.put(temp, new IntArrayList());
@@ -236,7 +246,7 @@ public class GraphDatabase {
 			int current_val = itr.next(); 
 			boolean selfLoop = true;
 			if (constraint.selfLoop != null)
-				selfLoop = selfLoop && neigh_index.get(current_val).checkIFNeighExists(constraint.selfLoop, current_val, Settings.IN);
+				selfLoop = selfLoop && neigh_index.get(current_val).checkIFNeighExists(constraint.selfLoop, current_val);
 				
 			if (selfLoop && checkSatNodes(current_val, constraint, sats_list, queryStruct.notVariable)){
 				current_sol[constraint.id] = current_val;
@@ -256,13 +266,13 @@ public class GraphDatabase {
 			IntHashSet temp = null;
 			int sat_id = in_it.next();
 			if (notVariable.containsKey(sat_id)){
-				meet_constraints = meet_constraints && neigh_index.get(vertex_id).checkIFNeighExists(constraint.satellites_in.get(sat_id), notVariable.get(sat_id), Settings.IN);
+				meet_constraints = meet_constraints && neigh_index.get(vertex_id).checkIFNeighExists(constraint.satellites_in.get(sat_id), notVariable.get(sat_id));
 				if (meet_constraints){
 					temp = new IntHashSet();
 					temp.add(notVariable.get(sat_id));
 				}
 			}else{	
-				temp = neigh_index.get(vertex_id).query(constraint.satellites_in.get(sat_id), Settings.IN);
+				temp = neigh_index.get(vertex_id).query(constraint.satellites_in.get(sat_id));
 				if (temp.size() == 0) meet_constraints = false;	
 			}
 			loc_sat_list.put(sat_id, temp);
@@ -273,13 +283,13 @@ public class GraphDatabase {
 			int sat_id = out_it.next();
 			IntHashSet temp = null;
 			if (notVariable.containsKey(sat_id)){
-				meet_constraints = meet_constraints && neigh_index.get(vertex_id).checkIFNeighExists(constraint.satellites_out.get(sat_id), notVariable.get(sat_id), Settings.OUT);
+				meet_constraints = meet_constraints && neigh_index.get(vertex_id).checkIFNeighExists(constraint.satellites_out.get(sat_id), notVariable.get(sat_id));
 				if (meet_constraints){
 					temp = new IntHashSet();
 					temp.add(notVariable.get(sat_id));
 				}
 			}else{	
-				temp = neigh_index.get(vertex_id).query(constraint.satellites_out.get(sat_id), Settings.OUT);
+				temp = neigh_index.get(vertex_id).query(constraint.satellites_out.get(sat_id));
 				if (temp.size() == 0) meet_constraints = false;
 			}
 			
@@ -302,9 +312,9 @@ public class GraphDatabase {
 	}
 	
 	
-	private short[] generateLabelsDirection(short[] temp, int direction){
+	private short[] generateLabelsDirection(short[] temp){
 		short[] result = new short[temp.length];
-		for (int i=0; i< temp.length;++i) result[i] = (short) (direction * temp[i]);
+		for (int i=0; i< temp.length;++i) result[i] = (short) (temp[i]);
 		return result;
 	}
 	
@@ -367,10 +377,10 @@ public class GraphDatabase {
 			if (constraints.isLiteralOrUri){
 				current_match_set = new IntHashSet();
 				current_match_set.add(constraints.literalOrUriCode);
-				IntHashSet first_constraints = neigh_index.get(current_sol[path.get(link.rank_previous_id).id]).query(link.dims, link.direction);
+				IntHashSet first_constraints = neigh_index.get(current_sol[path.get(link.rank_previous_id).id]).query(link.dims);
 				current_match_set.retainAll(first_constraints);
 			}else{
-				current_match_set = neigh_index.get(current_sol[path.get(link.rank_previous_id).id]).query(link.dims, link.direction);
+				current_match_set = neigh_index.get(current_sol[path.get(link.rank_previous_id).id]).query(link.dims);
 			}
 			current_match_set.retainAll(queryStruct.possible_candidates.get(constraints.id));
 		
@@ -379,16 +389,16 @@ public class GraphDatabase {
 				int prev_node_id = path.get(constraints.previous_links_cores.get(i).rank_previous_id).id;
 				int prev_vertex_id = current_sol[prev_node_id];	
 				IntHashSet constraint_match_set = null;
-				SimplePointND transformed = new SimplePointND(generateLabelsDirection(constraints.previous_links_cores.get(i).dims, constraints.previous_links_cores.get(i).direction));
+				SimplePointND transformed = new SimplePointND(generateLabelsDirection(constraints.previous_links_cores.get(i).dims));
 				if (buffer_neigh.containsKey(prev_node_id)){
 					if (((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).containsKey(transformed)){
 						constraint_match_set = ((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).get(transformed);
 					}else{
-						constraint_match_set = neigh_index.get(prev_vertex_id).query(constraints.previous_links_cores.get(i).dims, constraints.previous_links_cores.get(i).direction);
+						constraint_match_set = neigh_index.get(prev_vertex_id).query(constraints.previous_links_cores.get(i).dims);
 						((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).put(transformed, constraint_match_set);
 					}
 				}else{
-					constraint_match_set = neigh_index.get(prev_vertex_id).query(constraints.previous_links_cores.get(i).dims, constraints.previous_links_cores.get(i).direction);
+					constraint_match_set = neigh_index.get(prev_vertex_id).query(constraints.previous_links_cores.get(i).dims);
 					buffer_neigh.put(prev_node_id, new HashMap<SimplePointND, IntHashSet>());
 					((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).put(transformed, constraint_match_set);
 				}	
@@ -400,7 +410,7 @@ public class GraphDatabase {
 				int current_val = it2.next();
 				boolean selfLoop = true;
 				if (constraints.selfLoop != null)
-					selfLoop = selfLoop && neigh_index.get(current_val).checkIFNeighExists(constraints.selfLoop, current_val, Settings.IN);
+					selfLoop = selfLoop && neigh_index.get(current_val).checkIFNeighExists(constraints.selfLoop, current_val);
 				
 				if (selfLoop && checkSatNodes(current_val, constraints, sat_list, queryStruct.notVariable)){
 				//if (selfLoop){
