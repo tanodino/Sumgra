@@ -248,7 +248,8 @@ public class GraphDatabase {
 			if (constraint.selfLoop != null)
 				selfLoop = selfLoop && neigh_index.get(current_val).checkIFNeighExists(constraint.selfLoop, current_val);
 				
-			if (selfLoop && checkSatNodes(current_val, constraint, sats_list, queryStruct.notVariable)){
+//			if (selfLoop && checkSatNodes(current_val, constraint, sats_list, queryStruct.notVariable)){
+			if (selfLoop){
 				current_sol[constraint.id] = current_val;
 				backtrackingCheck(current_sol, 1, path, queryStruct, results, buffer_neigh, projection, sats_list, "\t");
 				buffer_neigh.remove(constraint.id);
@@ -256,79 +257,80 @@ public class GraphDatabase {
 		}
 	}
 	
-	
+	//DELETE-manage
 /* The heuristics to order the nodes of the query from the 2 to the last */
-	private boolean checkSatNodes(int vertex_id, ObjectPath constraint, IntObjectHashMap<IntHashSet> sats_list, IntObjectHashMap<Integer> notVariable){
-		boolean meet_constraints = true;
-		IntObjectHashMap<IntHashSet> loc_sat_list = new IntObjectHashMap<IntHashSet>();
-		MutableIntIterator in_it = constraint.satellites_in.keySet().intIterator();
-		while (in_it.hasNext() && meet_constraints){
-			IntHashSet temp = null;
-			int sat_id = in_it.next();
-			if (notVariable.containsKey(sat_id)){
-				meet_constraints = meet_constraints && neigh_index.get(vertex_id).checkIFNeighExists(constraint.satellites_in.get(sat_id), notVariable.get(sat_id));
-				if (meet_constraints){
-					temp = new IntHashSet();
-					temp.add(notVariable.get(sat_id));
-				}
-			}else{	
-				temp = neigh_index.get(vertex_id).query(constraint.satellites_in.get(sat_id));
-				if (temp.size() == 0) meet_constraints = false;	
-			}
-			loc_sat_list.put(sat_id, temp);
-		}
+//	private boolean checkSatNodes(int vertex_id, ObjectPath constraint, IntObjectHashMap<IntHashSet> sats_list, IntObjectHashMap<Integer> notVariable){
+//		boolean meet_constraints = true;
+//		IntObjectHashMap<IntHashSet> loc_sat_list = new IntObjectHashMap<IntHashSet>();
+//		MutableIntIterator in_it = constraint.satellites_in.keySet().intIterator();
+//		while (in_it.hasNext() && meet_constraints){
+//			IntHashSet temp = null;
+//			int sat_id = in_it.next();
+//			if (notVariable.containsKey(sat_id)){
+//				meet_constraints = meet_constraints && neigh_index.get(vertex_id).checkIFNeighExists(constraint.satellites_in.get(sat_id), notVariable.get(sat_id));
+//				if (meet_constraints){
+//					temp = new IntHashSet();
+//					temp.add(notVariable.get(sat_id));
+//				}
+//			}else{	
+//				temp = neigh_index.get(vertex_id).query(constraint.satellites_in.get(sat_id));
+//				if (temp.size() == 0) meet_constraints = false;	
+//			}
+//			loc_sat_list.put(sat_id, temp);
+//		}
+//	
+//		MutableIntIterator out_it = constraint.satellites_out.keySet().intIterator();
+//		while (out_it.hasNext() && meet_constraints){
+//			int sat_id = out_it.next();
+//			IntHashSet temp = null;
+//			if (notVariable.containsKey(sat_id)){
+//				meet_constraints = meet_constraints && neigh_index.get(vertex_id).checkIFNeighExists(constraint.satellites_out.get(sat_id), notVariable.get(sat_id));
+//				if (meet_constraints){
+//					temp = new IntHashSet();
+//					temp.add(notVariable.get(sat_id));
+//				}
+//			}else{	
+//				temp = neigh_index.get(vertex_id).query(constraint.satellites_out.get(sat_id));
+//				if (temp.size() == 0) meet_constraints = false;
+//			}
+//			
+//			if (loc_sat_list.containsKey(sat_id) && meet_constraints){
+//				loc_sat_list.get(sat_id).retainAll(temp);
+//				if (loc_sat_list.get(sat_id).size() == 0) meet_constraints = false;
+//			}else{
+//				loc_sat_list.put(sat_id, temp);
+//			}
+//		}
+//		
+//		if (meet_constraints){
+//			MutableIntIterator it = loc_sat_list.keySet().intIterator();
+//			while (it.hasNext()){
+//				int val = it.next();
+//				sats_list.put(val, loc_sat_list.get(val));
+//			}
+//		}
+//		return meet_constraints;
+//	}
 	
-		MutableIntIterator out_it = constraint.satellites_out.keySet().intIterator();
-		while (out_it.hasNext() && meet_constraints){
-			int sat_id = out_it.next();
-			IntHashSet temp = null;
-			if (notVariable.containsKey(sat_id)){
-				meet_constraints = meet_constraints && neigh_index.get(vertex_id).checkIFNeighExists(constraint.satellites_out.get(sat_id), notVariable.get(sat_id));
-				if (meet_constraints){
-					temp = new IntHashSet();
-					temp.add(notVariable.get(sat_id));
-				}
-			}else{	
-				temp = neigh_index.get(vertex_id).query(constraint.satellites_out.get(sat_id));
-				if (temp.size() == 0) meet_constraints = false;
-			}
-			
-			if (loc_sat_list.containsKey(sat_id) && meet_constraints){
-				loc_sat_list.get(sat_id).retainAll(temp);
-				if (loc_sat_list.get(sat_id).size() == 0) meet_constraints = false;
-			}else{
-				loc_sat_list.put(sat_id, temp);
-			}
-		}
-		
-		if (meet_constraints){
-			MutableIntIterator it = loc_sat_list.keySet().intIterator();
-			while (it.hasNext()){
-				int val = it.next();
-				sats_list.put(val, loc_sat_list.get(val));
-			}
-		}
-		return meet_constraints;
-	}
+	//CAUTION DELETE
+//	private short[] generateLabelsDirection(short[] temp){
+//		short[] result = new short[temp.length];
+//		for (int i=0; i< temp.length;++i) result[i] = (short) (temp[i]);
+//		return result;
+//	}
 	
-	
-	private short[] generateLabelsDirection(short[] temp){
-		short[] result = new short[temp.length];
-		for (int i=0; i< temp.length;++i) result[i] = (short) (temp[i]);
-		return result;
-	}
-	
-	public void combineCoreAndSatellites(int[] current_sol, IntObjectHashMap<IntHashSet> sat_list, FastList<int[]> results, IntArrayList projection){
-		//System.out.println(Arrays.toString(current_sol));
-		//int[] temp_sol = Arrays.copyOf(current_sol, current_sol.length);
-		int[] sat_position = sat_list.keySet().toArray();
-		int sat_idx = 0;
-		MutableIntIterator itr = sat_list.get(sat_position[sat_idx]).intIterator();
-		while (itr.hasNext()){
-			current_sol[sat_position[sat_idx]] = itr.next();
-			generateSol(current_sol, sat_idx+1,  sat_position, results, sat_list, projection);
-		}
-	}
+	//CD
+//	public void combineCoreAndSatellites(int[] current_sol, IntObjectHashMap<IntHashSet> sat_list, FastList<int[]> results, IntArrayList projection){
+//		//System.out.println(Arrays.toString(current_sol));
+//		//int[] temp_sol = Arrays.copyOf(current_sol, current_sol.length);
+//		int[] sat_position = sat_list.keySet().toArray();
+//		int sat_idx = 0;
+//		MutableIntIterator itr = sat_list.get(sat_position[sat_idx]).intIterator();
+//		while (itr.hasNext()){
+//			current_sol[sat_position[sat_idx]] = itr.next();
+//			generateSol(current_sol, sat_idx+1,  sat_position, results, sat_list, projection);
+//		}
+//	}
 	
 	public void generateSol(int[] current_sol, int sat_idx, int[] sat_position, FastList<int[]> results, IntObjectHashMap<IntHashSet> sat_list, IntArrayList projection){
 		if (sat_idx == sat_position.length){
@@ -354,21 +356,21 @@ public class GraphDatabase {
 	}
 	
 	
-	
+	//main loop
 	public void backtrackingCheck(int[] current_sol, int level, Vector<ObjectPath> path, Query queryStruct,  FastList<int[]> results, IntObjectHashMap buffer_neigh, IntArrayList projection, IntObjectHashMap<IntHashSet> sat_list, String offset){
 		//terminate the recursion if the procedure gets a solution for the whole set of nodes that meets the constraints 
-		if (level == (path.size())){
-			//System.out.println(Arrays.toString(current_sol));
-			//results.add(current_sol);
-/*
-			boolean check_sats = true;
-			for (int i=1; i < path.size()-1 && check_sats; ++i){
-				check_sats = check_sats && checkSatNodes(current_sol[path.get(i).id], path.get(i), sat_list, queryStruct.notVariable);
-			}
-			if (check_sats)
-*/				combineCoreAndSatellites(current_sol, sat_list, results, projection);
-			//return;
-		}else{
+//		if (level == (path.size())){
+//			//System.out.println(Arrays.toString(current_sol));
+//			//results.add(current_sol);
+///*
+//			boolean check_sats = true;
+//			for (int i=1; i < path.size()-1 && check_sats; ++i){
+//				check_sats = check_sats && checkSatNodes(current_sol[path.get(i).id], path.get(i), sat_list, queryStruct.notVariable);
+//			}
+//			if (check_sats)
+//*/				//combineCoreAndSatellites(current_sol, sat_list, results, projection);
+//			//return;
+//		}else{
 		
 			ObjectPath constraints = path.get(level);		
 			LinkObjectPath link = constraints.previous_links_cores.get(0);
@@ -384,24 +386,25 @@ public class GraphDatabase {
 			}
 			current_match_set.retainAll(queryStruct.possible_candidates.get(constraints.id));
 		
-		
+			//check homomorphism - CHECK WITH DINO
 			for (int i=constraints.previous_links_cores.size(); --i >= 1 && current_match_set.size() > 0;){
 				int prev_node_id = path.get(constraints.previous_links_cores.get(i).rank_previous_id).id;
 				int prev_vertex_id = current_sol[prev_node_id];	
 				IntHashSet constraint_match_set = null;
-				SimplePointND transformed = new SimplePointND(generateLabelsDirection(constraints.previous_links_cores.get(i).dims));
-				if (buffer_neigh.containsKey(prev_node_id)){
-					if (((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).containsKey(transformed)){
-						constraint_match_set = ((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).get(transformed);
-					}else{
-						constraint_match_set = neigh_index.get(prev_vertex_id).query(constraints.previous_links_cores.get(i).dims);
-						((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).put(transformed, constraint_match_set);
-					}
-				}else{
-					constraint_match_set = neigh_index.get(prev_vertex_id).query(constraints.previous_links_cores.get(i).dims);
-					buffer_neigh.put(prev_node_id, new HashMap<SimplePointND, IntHashSet>());
-					((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).put(transformed, constraint_match_set);
-				}	
+				
+//				SimplePointND transformed = new SimplePointND(generateLabelsDirection(constraints.previous_links_cores.get(i).dims));
+//				if (buffer_neigh.containsKey(prev_node_id)){
+//					if (((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).containsKey(transformed)){
+//						constraint_match_set = ((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).get(transformed);
+//					}else{
+//						constraint_match_set = neigh_index.get(prev_vertex_id).query(constraints.previous_links_cores.get(i).dims);
+//						((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).put(transformed, constraint_match_set);
+//					}
+//				}else{
+//					constraint_match_set = neigh_index.get(prev_vertex_id).query(constraints.previous_links_cores.get(i).dims);
+//					buffer_neigh.put(prev_node_id, new HashMap<SimplePointND, IntHashSet>());
+//					((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).put(transformed, constraint_match_set);
+//				}	
 				current_match_set.retainAll(constraint_match_set); 
 			}
 		
@@ -412,14 +415,14 @@ public class GraphDatabase {
 				if (constraints.selfLoop != null)
 					selfLoop = selfLoop && neigh_index.get(current_val).checkIFNeighExists(constraints.selfLoop, current_val);
 				
-				if (selfLoop && checkSatNodes(current_val, constraints, sat_list, queryStruct.notVariable)){
-				//if (selfLoop){
+//				if (selfLoop && checkSatNodes(current_val, constraints, sat_list, queryStruct.notVariable)){
+				if (selfLoop){
 					current_sol[constraints.id] = current_val;
 					backtrackingCheck(current_sol, level+1, path, queryStruct, results, buffer_neigh, projection, sat_list, offset+"\t");
 					buffer_neigh.remove(constraints.id);
 				}	
 			}
-		}
+//		}
 	}
 	
 	

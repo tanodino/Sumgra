@@ -36,7 +36,7 @@ import data.Settings;
 public class Query {
 
 	private IntObjectHashMap<IntHashSet> in_list; 
-	private IntObjectHashMap<IntHashSet> out_list;
+//	private IntObjectHashMap<IntHashSet> out_list;
 	private HashMap< Pair,ShortHashSet > pair2dims;
 	private IntBooleanHashMap is_variable;
 	private HashMap< Pair,short[] > pair2dims_vec;
@@ -52,7 +52,7 @@ public class Query {
 	
 	public Query(ShortIntHashMap property_stat, GraphDatabase g){
 		in_list = new IntObjectHashMap<IntHashSet>();
-		out_list = new IntObjectHashMap<IntHashSet>();
+//		out_list = new IntObjectHashMap<IntHashSet>();
 		is_variable = new IntBooleanHashMap();
 		pair2dims = new HashMap< Pair,ShortHashSet >();
 		pair2dims_vec = new HashMap< Pair,short[] >();
@@ -78,8 +78,8 @@ public class Query {
 			IntHashSet temp_neighs = new IntHashSet();
 			if (in_list.containsKey(node_id))
 				temp_neighs.addAll(in_list.get(node_id));
-			if (out_list.containsKey(node_id))
-				temp_neighs.addAll(out_list.get(node_id));
+//			if (out_list.containsKey(node_id))
+//				temp_neighs.addAll(out_list.get(node_id));
 			
 			if (temp_neighs.size() == 1)
 				satellites.add(node_id);
@@ -97,9 +97,9 @@ public class Query {
 				if (in_list.containsKey(core_id) && in_list.get(core_id).contains(sat_id)){
 					cores2sats.get(core_id).add(sat_id);
 				}
-				if (out_list.containsKey(core_id) && out_list.get(core_id).contains(sat_id)){
-					cores2sats.get(core_id).add(sat_id);
-				}
+//				if (out_list.containsKey(core_id) && out_list.get(core_id).contains(sat_id)){
+//					cores2sats.get(core_id).add(sat_id);
+//				}
 			}
 		}
 		
@@ -121,9 +121,9 @@ public class Query {
 					connected = true;
 				}
 					
-				if (out_list.containsKey(not_yet_ranked) && out_list.get(not_yet_ranked).contains(yet_ordered)){
-					connected = true;
-				}
+//				if (out_list.containsKey(not_yet_ranked) && out_list.get(not_yet_ranked).contains(yet_ordered)){
+//					connected = true;
+//				}
 			}
 			if (connected){
 				int n_matches = possible_candidates.get(not_yet_ranked).size();
@@ -158,13 +158,12 @@ public class Query {
 					}
 				}
 					
-				if (out_list.containsKey(not_yet_ranked) && out_list.get(not_yet_ranked).contains(yet_ordered)){
-					MutableShortIterator itrs = pair2dims.get(new Pair(not_yet_ranked, yet_ordered)).shortIterator();
-					while (itrs.hasNext()){
-						min_dims = Math.min(min_dims,dim_stat.get(itrs.next()));
-					}
-
-				}
+//				if (out_list.containsKey(not_yet_ranked) && out_list.get(not_yet_ranked).contains(yet_ordered)){
+//					MutableShortIterator itrs = pair2dims.get(new Pair(not_yet_ranked, yet_ordered)).shortIterator();
+//					while (itrs.hasNext()){
+//						min_dims = Math.min(min_dims,dim_stat.get(itrs.next()));
+//					}
+//				}
 			}
 			if (!prop2node.containsKey(min_dims))
 				prop2node.put(min_dims,new IntHashSet());
@@ -191,8 +190,8 @@ public class Query {
 			if (in_list.containsKey(yet_ordered))
 				frontier.addAll(in_list.get(yet_ordered));
 			
-			if (out_list.containsKey(yet_ordered))
-				frontier.addAll(out_list.get(yet_ordered));
+//			if (out_list.containsKey(yet_ordered))
+//				frontier.addAll(out_list.get(yet_ordered));
 		}
 		
 		
@@ -202,8 +201,8 @@ public class Query {
 			if (in_list.containsKey(not_yet_ordered))
 				not_yet_ordered_frontier.addAll(in_list.get(not_yet_ordered));
 			
-			if (out_list.containsKey(not_yet_ordered))
-				not_yet_ordered_frontier.addAll(out_list.get(not_yet_ordered));
+//			if (out_list.containsKey(not_yet_ordered))
+//				not_yet_ordered_frontier.addAll(out_list.get(not_yet_ordered));
 					
 			not_yet_ordered_frontier.retainAll(frontier);
 			
@@ -232,8 +231,8 @@ public class Query {
 				if (in_list.containsKey(not_yet_ordered) && in_list.get(not_yet_ordered).contains(yet_ordered))
 					count_links += pair2dims.get(new Pair(yet_ordered, not_yet_ordered)).size();
 					
-				if (out_list.containsKey(not_yet_ordered) && out_list.get(not_yet_ordered).contains(yet_ordered))
-					count_links += pair2dims.get(new Pair(not_yet_ordered,yet_ordered)).size();
+//				if (out_list.containsKey(not_yet_ordered) && out_list.get(not_yet_ordered).contains(yet_ordered))
+//					count_links += pair2dims.get(new Pair(not_yet_ordered,yet_ordered)).size();
 			}
 			if (!nlinks2node.containsKey(count_links))
 				nlinks2node.put(count_links, new IntHashSet());
@@ -266,28 +265,28 @@ public class Query {
 						if (in_list.containsKey(in_neigh) && in_list.get(in_neigh).contains(yet_ordered))
 							count_links += pair2dims.get(new Pair(in_neigh, not_yet_ordered)).size();
 							
-						if (out_list.containsKey(in_neigh) && out_list.get(in_neigh).contains(yet_ordered))
-							count_links += pair2dims.get(new Pair(in_neigh,yet_ordered)).size();
+//						if (out_list.containsKey(in_neigh) && out_list.get(in_neigh).contains(yet_ordered))
+//							count_links += pair2dims.get(new Pair(in_neigh,yet_ordered)).size();
 					}
 				}
 			}
 			
-			if (out_list.containsKey(not_yet_ordered)){
-				MutableIntIterator itr_out_neighs_nod = out_list.get(not_yet_ordered).intIterator();		
-				MutableIntIterator itr_already = already_considered.intIterator();
-				while (itr_already.hasNext()){
-					int yet_ordered  = itr_already.next();
-					while (itr_out_neighs_nod.hasNext()){
-						int out_neigh = itr_out_neighs_nod.next();
-						if (in_list.containsKey(out_neigh) && in_list.get(out_neigh).contains(yet_ordered))
-							count_links += pair2dims.get(new Pair(out_neigh, not_yet_ordered)).size();
-							
-						if (out_list.containsKey(out_neigh) && out_list.get(out_neigh).contains(yet_ordered))
-							count_links += pair2dims.get(new Pair(out_neigh,yet_ordered)).size();
-					}
-				}
-				
-			}
+//			if (out_list.containsKey(not_yet_ordered)){
+//				MutableIntIterator itr_out_neighs_nod = out_list.get(not_yet_ordered).intIterator();		
+//				MutableIntIterator itr_already = already_considered.intIterator();
+//				while (itr_already.hasNext()){
+//					int yet_ordered  = itr_already.next();
+//					while (itr_out_neighs_nod.hasNext()){
+//						int out_neigh = itr_out_neighs_nod.next();
+//						if (in_list.containsKey(out_neigh) && in_list.get(out_neigh).contains(yet_ordered))
+//							count_links += pair2dims.get(new Pair(out_neigh, not_yet_ordered)).size();
+//							
+//						if (out_list.containsKey(out_neigh) && out_list.get(out_neigh).contains(yet_ordered))
+//							count_links += pair2dims.get(new Pair(out_neigh,yet_ordered)).size();
+//					}
+//				}
+//				
+//			}
 			if (!nlinks2node.containsKey(count_links))
 				nlinks2node.put(count_links, new IntHashSet());
 			
@@ -315,8 +314,8 @@ public class Query {
 				if (in_list.containsKey(not_yet_ordered) && in_list.get(not_yet_ordered).contains(yet_ordered))
 					count_links = Math.max(count_links, cores2sats.get(not_yet_ordered).size());
 					
-				if (out_list.containsKey(not_yet_ordered) && out_list.get(not_yet_ordered).contains(yet_ordered))
-					count_links = Math.max(count_links, cores2sats.get(not_yet_ordered).size());
+//				if (out_list.containsKey(not_yet_ordered) && out_list.get(not_yet_ordered).contains(yet_ordered))
+//					count_links = Math.max(count_links, cores2sats.get(not_yet_ordered).size());
 			}
 			if (!nlinks2node.containsKey(count_links))
 				nlinks2node.put(count_links, new IntHashSet());
@@ -346,14 +345,14 @@ public class Query {
 					}
 				}
 			}
-			if (out_list.containsKey(node_id)){
-				MutableIntIterator it1 = out_list.get(node_id).intIterator();
-				while (it1.hasNext()){
-					if (notVariable.containsKey(it1.next())){
-						current_links++;
-					}
-				}
-			}
+//			if (out_list.containsKey(node_id)){
+//				MutableIntIterator it1 = out_list.get(node_id).intIterator();
+//				while (it1.hasNext()){
+//					if (notVariable.containsKey(it1.next())){
+//						current_links++;
+//					}
+//				}
+//			}
 			
 			if (!nlinks2node.containsKey(current_links))
 				nlinks2node.put(current_links, new IntHashSet());
@@ -376,9 +375,9 @@ public class Query {
 			if (in_list.containsKey(node_id)){
 				current_links += in_list.get(node_id).size();
 			}
-			if (out_list.containsKey(node_id)){
-				current_links += out_list.get(node_id).size();
-			}
+//			if (out_list.containsKey(node_id)){
+//				current_links += out_list.get(node_id).size();
+//			}
 			if (!nlinks2node.containsKey(current_links))
 				nlinks2node.put(current_links, new IntHashSet());
 			
@@ -491,8 +490,8 @@ public class Query {
 		TreeSet<Integer> ris = new TreeSet<Integer>();
 		MutableIntIterator it = in_list.keySet().intIterator();
 		while( it.hasNext()) ris.add(it.next());
-		it = out_list.keySet().intIterator();
-		while( it.hasNext()) ris.add(it.next());
+//		it = out_list.keySet().intIterator();
+//		while( it.hasNext()) ris.add(it.next());
 		return ris.size();
 	}
 	
@@ -575,8 +574,8 @@ public class Query {
 			}
 			for (int j=0; j < i; ++j){
 				int previous_id = queryOrder[j];
-				if (out_list.get(vertex_id1) != null && ((IntHashSet) out_list.get(vertex_id1)).contains(previous_id))
-					current.addLink(previous_id, j,  pair2dims_vec.get( new Pair(vertex_id1,previous_id) ));
+//				if (out_list.get(vertex_id1) != null && ((IntHashSet) out_list.get(vertex_id1)).contains(previous_id))
+//					current.addLink(previous_id, j,  pair2dims_vec.get( new Pair(vertex_id1,previous_id) ));
 				if ( in_list.get(vertex_id1) != null && ((IntHashSet) in_list.get(vertex_id1)).contains(previous_id) )
 					current.addLink(previous_id, j,  pair2dims_vec.get( new Pair(previous_id,vertex_id1) ));				
 			}
@@ -598,56 +597,61 @@ public class Query {
 		return path;
 		
 	}
-	
-	
-	//IN (positive) OUT (negative)
-	// feature 1: maximum cardinality of a set in the vertex signature
-	// feature 2: number of unique dimension in the vertex signature
-	// feature 3: minimum index value of the edge type
-	// feature 4: maximum index value of the edge type
+
+	// feature 1: cardinality of vertex signature
+	// feature 2: number of unique dimension in the vertex signature (f2 in amber)
+	// feature 3: number of all occurrences of the dimensions (with repetition)
+	// feature 4: minimum index of lexicographically ordered edge dimensions (f3 in amber)
+	// feature 5: maximum index of lexicographically ordered edge dimensions (f4 in amber)
+	// feature 6: maximum cardinality of the vertex sub-signature (f1 in amber)
 	public SimplePointND getSynopsis(int v_id){
 		short[] syn = new short[Settings.SYNOPSIS_SIZE];
-		syn[2] = syn[2+Settings.N_FEAT] = Short.MIN_VALUE;
+		syn[3]  = Short.MIN_VALUE;//Feature 4
+		syn[0] = 0;//Feature 1
+		syn[2] = 0;//Feature 3
 		MutableIntIterator itr = null;
 		IntHashSet unique_dims = null;
-			
+		
 		/* BUILD THE SYNOPSIS FOR INCOMING LIST */
 		if (in_list.get(v_id) != null){
 			itr = ( (IntHashSet) in_list.get(v_id)).intIterator();
 			unique_dims = new IntHashSet();
+			
 			while (itr.hasNext()){
+				syn[0] += 1; //Feature 1
 				Pair p_temp = new Pair(itr.next(),v_id);
 				ShortHashSet dims = pair2dims.get(p_temp);
-				syn[0] = (short) ((dims.size() > syn[0])?pair2dims.get(p_temp).size():syn[0]);
+				syn[5] = (short) ((dims.size() > syn[5])?pair2dims.get(p_temp).size():syn[5]); //Feature 6
 				MutableShortIterator it_short = dims.shortIterator();
 				while (it_short.hasNext()){
+					syn[2] += 1;//Feature 3 
 					short s = it_short.next();
-					syn[2] = (short) ((s < (-1*syn[2]))?(-1*s):syn[2]);
-					syn[3] = (s > syn[3])?s:syn[3];
+					syn[3] = (short) ((s < (-1*syn[3]))?(-1*s):syn[3]); //Feature 4
+					syn[4] = (s > syn[4])?s:syn[4]; //Feature 5
 					unique_dims.add(s);
 				}
 			}
-			syn[1] = (short) unique_dims.size();
+			syn[1] = (short) unique_dims.size(); //Feature 2
 		}
 		
 		/* BUILD THE SYNOPSIS FOR INCOMING LIST */
-		if (out_list.get(v_id) != null){
-			itr = ( (IntHashSet) out_list.get(v_id)).intIterator();
-			unique_dims = new IntHashSet();
-			while (itr.hasNext()){
-				Pair p_temp = new Pair(v_id,itr.next());
-				ShortHashSet dims = pair2dims.get(p_temp);
-				syn[0+Settings.N_FEAT] = (short) ((dims.size() > syn[0+Settings.N_FEAT])?pair2dims.get(p_temp).size():syn[0+Settings.N_FEAT]);
-				MutableShortIterator it_short = dims.shortIterator();
-				while (it_short.hasNext()){
-					short s = it_short.next();
-					syn[2+Settings.N_FEAT] = (short) ((s < (-1*syn[2+Settings.N_FEAT]))?(-1*s):syn[2+Settings.N_FEAT]);
-					syn[3+Settings.N_FEAT] = (s > syn[3+Settings.N_FEAT])?s:syn[3+Settings.N_FEAT];
-					unique_dims.add(s);
-				}
-			}
-			syn[1+Settings.N_FEAT] = (short) unique_dims.size();
-		}
+//		if (out_list.get(v_id) != null){
+//			itr = ( (IntHashSet) out_list.get(v_id)).intIterator();
+//			unique_dims = new IntHashSet();
+//			while (itr.hasNext()){
+//				Pair p_temp = new Pair(v_id,itr.next());
+//				ShortHashSet dims = pair2dims.get(p_temp);
+//				syn[0+Settings.N_FEAT] = (short) ((dims.size() > syn[0+Settings.N_FEAT])?pair2dims.get(p_temp).size():syn[0+Settings.N_FEAT]);
+//				MutableShortIterator it_short = dims.shortIterator();
+//				while (it_short.hasNext()){
+//					short s = it_short.next();
+//					syn[2+Settings.N_FEAT] = (short) ((s < (-1*syn[2+Settings.N_FEAT]))?(-1*s):syn[2+Settings.N_FEAT]);
+//					syn[3+Settings.N_FEAT] = (s > syn[3+Settings.N_FEAT])?s:syn[3+Settings.N_FEAT];
+//					unique_dims.add(s);
+//				}
+//			}
+//			syn[1+Settings.N_FEAT] = (short) unique_dims.size();
+//		}
 		return new SimplePointND(syn);
 	}
 	
@@ -690,9 +694,9 @@ public class Query {
 			in_list.put(id_sink, new IntHashSet());
 		in_list.get(id_sink).add(id_source);
 		
-		if (!out_list.containsKey(id_source))
-			out_list.put(id_source, new IntHashSet());
-		out_list.get(id_source).add(id_sink);
+//		if (!out_list.containsKey(id_source))
+//			out_list.put(id_source, new IntHashSet());
+//		out_list.get(id_source).add(id_sink);
 		
 		Pair pair = new Pair(id_source,id_sink);
 		if (!pair2dims.containsKey(pair))
