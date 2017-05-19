@@ -230,30 +230,30 @@ public class GraphDatabase {
 		ObjectPath constraint = path.get(0);
 		
 		//if the first query node in the ranking is a literal or an URI load directly its identifier
-		if (constraint.isLiteralOrUri){ 
-			possible_initial_matches.add(constraint.literalOrUriCode);
-		}else{//otherwise if it is a variable ?x, query the R-TREE structure and retrieve the possible matches
+//		if (constraint.isLiteralOrUri){ 
+//			possible_initial_matches.add(constraint.literalOrUriCode);
+//		}else{//otherwise if it is a variable ?x, query the R-TREE structure and retrieve the possible matches
 			SimplePointND query_r_tree = queryStruct.getSynopsis(constraint.id);
 			prtree.getNotDominatedPoints(query_r_tree, resultNodes);
 			for (SimplePointND t: resultNodes){
 				possible_initial_matches.addAll(compacted_synopsis.get(t));
 			}
-		}
+//		}
 		
 		int [] current_sol = new int[queryStruct.size()];
 		MutableIntIterator itr = possible_initial_matches.intIterator();
 		while (itr.hasNext()){
 			int current_val = itr.next(); 
-			boolean selfLoop = true;
-			if (constraint.selfLoop != null)
-				selfLoop = selfLoop && neigh_index.get(current_val).checkIFNeighExists(constraint.selfLoop, current_val);
+//			boolean selfLoop = true;
+//			if (constraint.selfLoop != null)
+//				selfLoop = selfLoop && neigh_index.get(current_val).checkIFNeighExists(constraint.selfLoop, current_val);
 				
 //			if (selfLoop && checkSatNodes(current_val, constraint, sats_list, queryStruct.notVariable)){
-			if (selfLoop){
+//			if (selfLoop){
 				current_sol[constraint.id] = current_val;
 				backtrackingCheck(current_sol, 1, path, queryStruct, results, buffer_neigh, projection, sats_list, "\t");
 				buffer_neigh.remove(constraint.id);
-			}
+//			}
 		}
 	}
 	
@@ -313,11 +313,11 @@ public class GraphDatabase {
 //	}
 	
 	//CAUTION DELETE
-//	private short[] generateLabelsDirection(short[] temp){
-//		short[] result = new short[temp.length];
-//		for (int i=0; i< temp.length;++i) result[i] = (short) (temp[i]);
-//		return result;
-//	}
+	private short[] generateLabelsDirection(short[] temp){
+		short[] result = new short[temp.length];
+		for (int i=0; i< temp.length;++i) result[i] = (short) (temp[i]);
+		return result;
+	}
 	
 	//CD
 //	public void combineCoreAndSatellites(int[] current_sol, IntObjectHashMap<IntHashSet> sat_list, FastList<int[]> results, IntArrayList projection){
@@ -376,14 +376,14 @@ public class GraphDatabase {
 			LinkObjectPath link = constraints.previous_links_cores.get(0);
 		
 			IntHashSet current_match_set = null;
-			if (constraints.isLiteralOrUri){
-				current_match_set = new IntHashSet();
-				current_match_set.add(constraints.literalOrUriCode);
-				IntHashSet first_constraints = neigh_index.get(current_sol[path.get(link.rank_previous_id).id]).query(link.dims);
-				current_match_set.retainAll(first_constraints);
-			}else{
+//			if (constraints.isLiteralOrUri){
+//				current_match_set = new IntHashSet();
+//				current_match_set.add(constraints.literalOrUriCode);
+//				IntHashSet first_constraints = neigh_index.get(current_sol[path.get(link.rank_previous_id).id]).query(link.dims);
+//				current_match_set.retainAll(first_constraints);
+//			}else{
 				current_match_set = neigh_index.get(current_sol[path.get(link.rank_previous_id).id]).query(link.dims);
-			}
+//			}
 			current_match_set.retainAll(queryStruct.possible_candidates.get(constraints.id));
 		
 			//check homomorphism - CHECK WITH DINO
@@ -393,34 +393,35 @@ public class GraphDatabase {
 				IntHashSet constraint_match_set = null;
 				
 //				SimplePointND transformed = new SimplePointND(generateLabelsDirection(constraints.previous_links_cores.get(i).dims));
-//				if (buffer_neigh.containsKey(prev_node_id)){
-//					if (((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).containsKey(transformed)){
-//						constraint_match_set = ((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).get(transformed);
-//					}else{
-//						constraint_match_set = neigh_index.get(prev_vertex_id).query(constraints.previous_links_cores.get(i).dims);
-//						((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).put(transformed, constraint_match_set);
-//					}
-//				}else{
-//					constraint_match_set = neigh_index.get(prev_vertex_id).query(constraints.previous_links_cores.get(i).dims);
-//					buffer_neigh.put(prev_node_id, new HashMap<SimplePointND, IntHashSet>());
-//					((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).put(transformed, constraint_match_set);
-//				}	
+				SimplePointND transformed = new SimplePointND(constraints.previous_links_cores.get(i).dims);
+				if (buffer_neigh.containsKey(prev_node_id)){
+					if (((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).containsKey(transformed)){
+						constraint_match_set = ((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).get(transformed);
+					}else{
+						constraint_match_set = neigh_index.get(prev_vertex_id).query(constraints.previous_links_cores.get(i).dims);
+						((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).put(transformed, constraint_match_set);
+					}
+				}else{
+					constraint_match_set = neigh_index.get(prev_vertex_id).query(constraints.previous_links_cores.get(i).dims);
+					buffer_neigh.put(prev_node_id, new HashMap<SimplePointND, IntHashSet>());
+					((HashMap<SimplePointND, IntHashSet>) buffer_neigh.get(prev_node_id)).put(transformed, constraint_match_set);
+				}	
 				current_match_set.retainAll(constraint_match_set); 
 			}
 		
 			MutableIntIterator it2 = current_match_set.intIterator();
 			while (it2.hasNext()){	
 				int current_val = it2.next();
-				boolean selfLoop = true;
-				if (constraints.selfLoop != null)
-					selfLoop = selfLoop && neigh_index.get(current_val).checkIFNeighExists(constraints.selfLoop, current_val);
+//				boolean selfLoop = true;
+//				if (constraints.selfLoop != null)
+//					selfLoop = selfLoop && neigh_index.get(current_val).checkIFNeighExists(constraints.selfLoop, current_val);
 				
 //				if (selfLoop && checkSatNodes(current_val, constraints, sat_list, queryStruct.notVariable)){
-				if (selfLoop){
+//				if (selfLoop){
 					current_sol[constraints.id] = current_val;
 					backtrackingCheck(current_sol, level+1, path, queryStruct, results, buffer_neigh, projection, sat_list, offset+"\t");
 					buffer_neigh.remove(constraints.id);
-				}	
+//				}	
 			}
 //		}
 	}

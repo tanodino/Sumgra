@@ -59,8 +59,7 @@ public class Main {
 		// GraphDatabase("/Users/dinoienco/Downloads/watdiv_10M.nt");
 
 		testParser();
-
-		// testOtil();
+		//testOtil();
 		// testQuery();
 	}
 
@@ -196,7 +195,7 @@ public class Main {
 		try {
 			while ((cur = br.readLine()) != null) {
 				String[] elements = cur.split(" ");
-				int direction = Integer.parseInt(elements[0]);
+//				int direction = Integer.parseInt(elements[0]);
 				int neigh = Integer.parseInt(elements[1]);
 				String[] preds = elements[2].split(",");
 				short[] seq = new short[preds.length];

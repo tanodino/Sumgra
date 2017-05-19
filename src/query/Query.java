@@ -67,11 +67,10 @@ public class Query {
 	}
 
 	
-	
 	public void decompose(){
 		MutableIntSet node_set = id2token.keySet();
 		MutableIntIterator itr = node_set.intIterator();
-		IntHashSet satellites = new IntHashSet();
+//		IntHashSet satellites = new IntHashSet();
 		IntHashSet cores = new IntHashSet();
 		while (itr.hasNext()){
 			int node_id = itr.next();
@@ -81,9 +80,9 @@ public class Query {
 //			if (out_list.containsKey(node_id))
 //				temp_neighs.addAll(out_list.get(node_id));
 			
-			if (temp_neighs.size() == 1)
-				satellites.add(node_id);
-			else
+//			if (temp_neighs.size() == 1)
+//				satellites.add(node_id);
+//			else
 				cores.add(node_id);
 		}
 			
@@ -91,16 +90,16 @@ public class Query {
 		while (itr.hasNext()){
 			int core_id = itr.next();
 			cores2sats.put(core_id, new IntHashSet());
-			MutableIntIterator itr1 = satellites.intIterator();
-			while (itr1.hasNext()){
-				int sat_id = itr1.next();
-				if (in_list.containsKey(core_id) && in_list.get(core_id).contains(sat_id)){
-					cores2sats.get(core_id).add(sat_id);
-				}
-//				if (out_list.containsKey(core_id) && out_list.get(core_id).contains(sat_id)){
+//			MutableIntIterator itr1 = satellites.intIterator();
+//			while (itr1.hasNext()){
+//				int sat_id = itr1.next();
+//				if (in_list.containsKey(core_id) && in_list.get(core_id).contains(sat_id)){
 //					cores2sats.get(core_id).add(sat_id);
 //				}
-			}
+////				if (out_list.containsKey(core_id) && out_list.get(core_id).contains(sat_id)){
+////					cores2sats.get(core_id).add(sat_id);
+////				}
+//			}
 		}
 		
 	}
@@ -539,25 +538,25 @@ public class Query {
 		Vector<ObjectPath> path = new Vector<ObjectPath>();
 		ObjectPath first = new ObjectPath(queryOrder[0],0);
 		//manage the selfLoop case in the query structure for node in position 0
-		if (selfLoop.containsKey(queryOrder[0]))
-			first.selfLoop = selfLoop.get(queryOrder[0]).toArray();
-		if (notVariable.containsKey(queryOrder[0])){
-			first.isLiteralOrUri = true;
-			first.literalOrUriCode = notVariable.get(queryOrder[0]);
-		}
-		MutableIntIterator it_sat = cores2sats.get(first.id).intIterator();
-		
-		while (it_sat.hasNext()){
-			int id_sat = it_sat.next();
-			Pair out_sat = new Pair(first.id, id_sat);
-			if (pair2dims_vec.containsKey(out_sat)  ){
-				first.satellites_out.put(id_sat, pair2dims_vec.get(out_sat));
-			}
-			Pair in_sat = new Pair(id_sat, first.id);
-			if (pair2dims_vec.containsKey(in_sat)  ){
-				first.satellites_in.put(id_sat, pair2dims_vec.get(in_sat));
-			}	
-		}
+//		if (selfLoop.containsKey(queryOrder[0]))
+//			first.selfLoop = selfLoop.get(queryOrder[0]).toArray();
+//		if (notVariable.containsKey(queryOrder[0])){
+//			//first.isLiteralOrUri = true;
+//			first.literalOrUriCode = notVariable.get(queryOrder[0]);
+//		}
+//		MutableIntIterator it_sat = cores2sats.get(first.id).intIterator();
+//		
+//		while (it_sat.hasNext()){
+//			int id_sat = it_sat.next();
+//			Pair out_sat = new Pair(first.id, id_sat);
+////			if (pair2dims_vec.containsKey(out_sat)  ){
+////				first.satellites_out.put(id_sat, pair2dims_vec.get(out_sat));
+////			}
+//			Pair in_sat = new Pair(id_sat, first.id);
+//			if (pair2dims_vec.containsKey(in_sat)  ){
+//				first.satellites_in.put(id_sat, pair2dims_vec.get(in_sat));
+//			}	
+//		}
 		
 		
 		
@@ -566,12 +565,12 @@ public class Query {
 			int vertex_id1 = queryOrder[i];
 			ObjectPath current = new ObjectPath(queryOrder[i],i);
 			//manage the selfLoop case in the query structure for node in position i
-			if (selfLoop.containsKey(queryOrder[i]))
-				current.selfLoop = selfLoop.get(queryOrder[i]).toArray();
-			if (notVariable.containsKey(queryOrder[i])){
-				current.isLiteralOrUri = true;
-				current.literalOrUriCode = notVariable.get(queryOrder[i]);
-			}
+//			if (selfLoop.containsKey(queryOrder[i]))
+//				current.selfLoop = selfLoop.get(queryOrder[i]).toArray();
+//			if (notVariable.containsKey(queryOrder[i])){
+//				//current.isLiteralOrUri = true;
+//				current.literalOrUriCode = notVariable.get(queryOrder[i]);
+//			}
 			for (int j=0; j < i; ++j){
 				int previous_id = queryOrder[j];
 //				if (out_list.get(vertex_id1) != null && ((IntHashSet) out_list.get(vertex_id1)).contains(previous_id))
@@ -580,18 +579,18 @@ public class Query {
 					current.addLink(previous_id, j,  pair2dims_vec.get( new Pair(previous_id,vertex_id1) ));				
 			}
 			current.sort();
-			it_sat = cores2sats.get(current.id).intIterator();
-			while (it_sat.hasNext()){
-				int id_sat = it_sat.next();
-				Pair out_sat = new Pair(current.id, id_sat);
-				if (pair2dims_vec.containsKey(out_sat)  ){
-					current.satellites_out.put(id_sat, pair2dims_vec.get(out_sat));
-				}
-				Pair in_sat = new Pair(id_sat, current.id);
-				if (pair2dims_vec.containsKey(in_sat)  ){
-					current.satellites_in.put(id_sat, pair2dims_vec.get(in_sat));
-				}	
-			}
+//			it_sat = cores2sats.get(current.id).intIterator();
+//			while (it_sat.hasNext()){
+//				int id_sat = it_sat.next();
+//				Pair out_sat = new Pair(current.id, id_sat);
+//				if (pair2dims_vec.containsKey(out_sat)  ){
+//					current.satellites_out.put(id_sat, pair2dims_vec.get(out_sat));
+//				}
+//				Pair in_sat = new Pair(id_sat, current.id);
+//				if (pair2dims_vec.containsKey(in_sat)  ){
+//					current.satellites_in.put(id_sat, pair2dims_vec.get(in_sat));
+//				}	
+//			}
 			path.add(current);
 		}
 		return path;
